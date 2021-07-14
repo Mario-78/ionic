@@ -15,11 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mario.testProject.domain.Cidade;
 import com.mario.testProject.domain.Cliente;
 import com.mario.testProject.domain.Endereco;
+import com.mario.testProject.domain.enums.Perfil;
 import com.mario.testProject.domain.enums.TipoCliente;
 import com.mario.testProject.dto.ClienteDTO;
 import com.mario.testProject.dto.ClienteNewDTO;
 import com.mario.testProject.repositores.ClienteRepository;
 import com.mario.testProject.repositores.EnderecoRepository;
+import com.mario.testProject.security.UserSS;
+import com.mario.testProject.servisces.exceptions.AuthorizationException;
 import com.mario.testProject.servisces.exceptions.DataIntegrityException;
 import com.mario.testProject.servisces.exceptions.ObjectNotFoundException;
 
@@ -36,6 +39,11 @@ public class ClienteService {
 	private BCryptPasswordEncoder pe; 
 	
 	public Cliente find(Integer id) {
+		
+		UserSS user = UserService.authenticated();
+		if (user==null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
+			throw new AuthorizationException("Acesso negado");
+		}
 		
 		Optional<Cliente> obj = repo.findById(id);
 		
